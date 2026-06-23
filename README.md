@@ -131,31 +131,45 @@ JSON Schema validation
 ```text
 candidate-discovery-engine/
 │
-├── data/                          # Raw challenge inputs
+├── data/                                  # Challenge datasets & specifications
 │   ├── candidates.jsonl
+│   ├── candidate_schema.json
 │   ├── job_description.docx
-│   └── submission_specification.md
+│   ├── README.docx
+│   ├── redrob_signals_doc.docx
+│   ├── sample_5_candidates.json
+│   ├── sample_candidates.json
+│   ├── sample_submission.csv
+│   ├── submission_metadata_template.yaml
+│   ├── submission_spec.docx
+│   └── validate_submission.py
 │
-├── docs/                          # Documentation & analysis
+├── docs/                                  # Documentation & analysis
+│   ├── semantic_scorer_readme.md
 │   └── submission_analysis.md
 │
-├── output/                        # Generated outputs
-│   ├── submission.csv
-│   └── submission_metadata.yaml
+├── output/                                # Generated submission files
+│   ├── submission_metadata.yaml
+│   └── team_ai_rankers.csv
 │
 ├── src/
-│   ├── semantic_scorer.py         # Embedding + similarity scoring
-│   ├── semantic_variants.py       # Model comparison experiments
-│   ├── jd_semantic_analysis.py    # JD requirement extraction
-│   ├── output_generator.py        # CSV generation
-│   ├── validate_submission.py     # Submission validation
-│   └── main.py                    # End-to-end pipeline
+│   ├── config.py                          # Central configuration
+│   ├── data_cleaner.py                    # Data preprocessing
+│   ├── data_loader.py                     # Dataset loading utilities
+│   ├── jd_semantic_analysis.py            # Job description analysis
+│   ├── main.py                            # End-to-end pipeline entry point
+│   ├── output_generator.py                # CSV output generation
+│   ├── score_combiner.py                  # Weighted score fusion
+│   ├── semantic_scorer.py                 # Embedding-based ranking
+│   ├── semantic_variants.py               # Model comparison experiments
+│   ├── signal_scorer.py                   # Behavioral signal scoring
+│   └── test_semantic_variants.py          # Evaluation & testing
 │
-├── requirements.txt
-├── README.md
-├── LICENSE
+├── requirements.txt                       # Python dependencies
+├── README.md                              # Project documentation
 └── .gitignore
 ```
+
 
 
 # ⚙️ Usage
