@@ -1,0 +1,8 @@
+pandas
+numpy
+python-docx
+pyyaml
+jsonschema
+sentence-transformers
+scikit-learn
+torch

@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model cache (large files)
+model_cache/
+.cache/
+.huggingface/
+sentence_transformers/
+
+# Environment variables
+.env
+.env.local
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated outputs
+output/*.csv
+output/*.yaml
+output/*.yml
+
+# Logs
+*.log
+
+# Testing / coverage
+.coverage
+pytest_cache/
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Datasets (large files provided by organizers — not committed)
+# candidates.jsonl is ~465 MB; exceeds GitHub's 100 MB per-file limit.
+data/candidates.jsonl
