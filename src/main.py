@@ -42,6 +42,10 @@ import sys
 import time
 from pathlib import Path
 
+# Fix Windows console emoji printing
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # ============================================================================
 # SYS.PATH SETUP — make sibling modules importable
 # ============================================================================
