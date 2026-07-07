@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  candidate-discovery-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: candidate-discovery-engine:latest
+    container_name: candidate_discovery_engine
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Optional: Mount output folder to persist generated CSVs locally during development
+      - ./output:/app/output
+    restart: unless-stopped

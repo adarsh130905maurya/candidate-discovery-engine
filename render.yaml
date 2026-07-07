@@ -1,0 +1,16 @@
+# render.yaml — Render.com Blueprint Configuration
+# This file allows 1-click automatic deployment on Render.com as a Docker Web Service.
+# Zero disk storage is used on the server for CSV uploads (processed 100% client-side in tab).
+
+services:
+  - type: web
+    name: candidate-discovery-engine
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PYTHONUNBUFFERED
+        value: 1

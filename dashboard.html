@@ -527,6 +527,7 @@ tbody tr:hover { background: var(--surface-2); }
   <symbol id="i-bars" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><rect x="7.5" y="12" width="3" height="5"/><rect x="12.5" y="8" width="3" height="9"/><rect x="17.5" y="14" width="0.5" height="3"/></symbol>
   <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H4.5a2 2 0 0 0 0 4H7M17 5.5h2.5a2 2 0 0 1 0 4H17M10 13.5v3M14 13.5v3M7.5 20h9M9 20v-1.5h6V20"/></symbol>
   <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7L12 2.5Z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5V21.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></symbol>
 </svg>
 
 <!-- ===================== NAVBAR ===================== -->
@@ -544,6 +545,7 @@ tbody tr:hover { background: var(--surface-2); }
         <a href="dashboard.html" class="nav-link active">Dashboard</a>
         <a href="methodology.html" class="nav-link">Methodology</a>
       </nav>
+      <span class="dataset-pill" id="storage-status" title="Client-Side Tab Isolation: CSV files are processed in your browser memory. Zero bytes are saved to server disk (protecting Render.com 512MB storage). Auto-clears after 5m inactivity or tab close." style="background:rgba(94,234,212,.08);border-color:rgba(94,234,212,.25);color:var(--accent);cursor:help;"><svg class="ico ico-sm"><use href="#i-shield"/></svg><b>Tab-Isolated</b> (0MB Server)</span>
       <span class="dataset-pill" id="dataset-pill"><span class="dot"></span><b>Sample data</b></span>
       <input type="file" id="csv-input" accept=".csv,text/csv" hidden />
       <button class="btn btn--accent" id="upload-btn"><svg class="ico ico-sm"><use href="#i-upload"/></svg>Upload CSV</button>
@@ -752,6 +754,9 @@ tbody tr:hover { background: var(--surface-2); }
   </div>
 </div>
 
+<!-- Toast Container for Notifications -->
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;"></div>
+
 <script>
 /* ============================================================
    SAMPLE FALLBACK DATA
@@ -772,6 +777,60 @@ const SAMPLE_DATA = [
 let DATA = [];
 let sortKey = 'rank', sortDir = 'asc';
 let distChart = null, scatterChart = null;
+
+/* ============================================================
+   TOAST NOTIFICATION SYSTEM & RENDER.COM STORAGE PROTECTION
+   ============================================================ */
+function showToast(msg, type = 'accent', duration = 5000) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  const bg = type === 'bad' ? 'rgba(248,113,113,.15)' : type === 'good' ? 'rgba(74,222,128,.15)' : 'rgba(94,234,212,.15)';
+  const border = type === 'bad' ? 'var(--bad)' : type === 'good' ? 'var(--good)' : 'var(--accent)';
+  const color = type === 'bad' ? '#f87171' : type === 'good' ? '#4ade80' : '#5eead4';
+  
+  toast.style.cssText = `background:#101015;border:1px solid ${border};color:var(--text);padding:12px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:13.5px;display:flex;align-items:center;gap:10px;pointer-events:auto;backdrop-filter:blur(12px);transform:translateY(20px);opacity:0;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);`;
+  toast.innerHTML = `<span style="color:${color};font-weight:600;font-size:16px;">•</span> <span>${msg}</span>`;
+  container.appendChild(toast);
+  
+  requestAnimationFrame(() => {
+    toast.style.transform = 'translateY(0)';
+    toast.style.opacity = '1';
+  });
+  
+  setTimeout(() => {
+    toast.style.transform = 'translateY(10px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/* ============================================================
+   INACTIVITY MONITOR & AUTO-CLEAR (5-MIN / TAB CLOSE)
+   Protects server memory & Render.com 512MB storage
+   ============================================================ */
+let inactivityTimer = null;
+const INACTIVITY_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
+
+function resetInactivityTimer() {
+  if (inactivityTimer) clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    showToast('⏳ 5 minutes of inactivity detected. Session refreshed & browser memory cleared to protect server resources.', 'bad', 8000);
+    setTimeout(() => {
+      window.location.reload();
+    }, 2500);
+  }, INACTIVITY_LIMIT_MS);
+}
+
+['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+  window.addEventListener(evt, resetInactivityTimer, { passive: true });
+});
+resetInactivityTimer();
+
+window.addEventListener('beforeunload', () => {
+  if (typeof DATA !== 'undefined') DATA.length = 0;
+  if (typeof SAMPLE_DATA !== 'undefined') SAMPLE_DATA.length = 0;
+});
 
 /* ---- Chart.js global theme ---- */
 Chart.defaults.color = '#6e7280';
@@ -1064,11 +1123,24 @@ function wireEvents() {
   document.getElementById('upload-btn').addEventListener('click', () => input.click());
   input.addEventListener('change', (e) => {
     const file = e.target.files[0]; if (!file) return;
+    
+    // 50MB File Size Limit Check (Render.com storage & browser memory protection)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      showToast(`⚠️ File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50MB limit. Please upload a smaller CSV file.`, 'bad');
+      input.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       const rows = normalizeCSV(parseCSV(ev.target.result));
-      if (rows.length) loadData(rows, file.name);
-      else alert('Could not read any rows from that CSV.');
+      if (rows.length) {
+        loadData(rows, file.name);
+        showToast(`📁 Successfully loaded "${file.name}" (${rows.length} records) in your tab. Zero server disk storage used!`, 'good');
+      } else {
+        showToast('⚠️ Could not read any valid rows from that CSV file.', 'bad');
+      }
     };
     reader.readAsText(file);
     input.value = '';
@@ -1095,10 +1167,27 @@ function wireEvents() {
 }
 
 /* ============================================================
-   INIT
+   INIT — auto-load CSV when served via HTTP, else use sample
    ============================================================ */
 wireEvents();
-loadData(SAMPLE_DATA, 'Sample data');
+
+(async function autoLoad() {
+  // When served via http://localhost, try to fetch the pipeline output CSV
+  if (location.protocol.startsWith('http')) {
+    try {
+      const resp = await fetch('output/team_ai_rankers.csv');
+      if (resp.ok) {
+        const text = await resp.text();
+        const rows = normalizeCSV(parseCSV(text));
+        if (rows.length) {
+          loadData(rows, 'team_ai_rankers.csv');
+          return; // success — skip sample data
+        }
+      }
+    } catch (_) { /* fetch failed — fall through to sample */ }
+  }
+  loadData(SAMPLE_DATA, 'Sample data');
+})();
 </script>
 </body>
 </html>

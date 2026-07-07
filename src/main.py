@@ -135,7 +135,7 @@ def _stage_timer(stage_name: str):
     """
     class _Timer:
         def __enter__(self_inner):
-            print(f"\n▶ {stage_name}...")
+            print(f"\n>>> {stage_name}...")
             self_inner.start = time.perf_counter()
             return self_inner
 
@@ -198,7 +198,7 @@ def run_pipeline(limit: int = None,
     # BANNER
     # ====================================================================
     print("=" * 72)
-    print(" INTELLIGENT CANDIDATE DISCOVERY ENGINE — pipeline")
+    print(" INTELLIGENT CANDIDATE DISCOVERY ENGINE - pipeline")
     print("=" * 72)
     print(f"  Model     : {model_name}")
     print(f"  Weights   : semantic={weights['semantic']}, "
@@ -244,10 +244,10 @@ def run_pipeline(limit: int = None,
             # The behavioral dict and profiles dict should cover the same IDs.
             id_mismatch = set(profiles) ^ set(behavioral_data)
             if id_mismatch:
-                print(f"  ⚠ {len(id_mismatch)} IDs differ between profiles and "
+                print(f"  [WARN] {len(id_mismatch)} IDs differ between profiles and "
                       f"behavioral data (will be treated as 0.0 where missing).")
     except Exception as exc:
-        print(f"\n❌ STEP 1 FAILED: {exc}")
+        print(f"\n[ERROR] STEP 1 FAILED: {exc}")
         _print_failure_hint("data loading",
                             "data_loader.py / data_cleaner.py / candidates.jsonl")
         return 1
@@ -273,7 +273,7 @@ def run_pipeline(limit: int = None,
             for cid, sc in preview:
                 print(f"    top semantic: {cid}  {sc:.4f}")
     except Exception as exc:
-        print(f"\n❌ STEP 2 FAILED: {exc}")
+        print(f"\n[ERROR] STEP 2 FAILED: {exc}")
         _print_failure_hint("semantic scoring",
                             "sentence-transformers / network for model download")
         return 1
@@ -294,7 +294,7 @@ def run_pipeline(limit: int = None,
             for cid, sc in preview:
                 print(f"    top behavioral: {cid}  {sc:.4f}")
     except Exception as exc:
-        print(f"\n❌ STEP 3 FAILED: {exc}")
+        print(f"\n[ERROR] STEP 3 FAILED: {exc}")
         _print_failure_hint("behavioral scoring", "signal_scorer.py")
         return 1
 
@@ -314,7 +314,7 @@ def run_pipeline(limit: int = None,
             print(f"  #1: {ranked[0]['candidate_id']}  "
                   f"final={ranked[0]['final_score']:.4f}")
     except Exception as exc:
-        print(f"\n❌ STEP 4 FAILED: {exc}")
+        print(f"\n[ERROR] STEP 4 FAILED: {exc}")
         _print_failure_hint("score fusion", "score_combiner.py")
         return 1
 
@@ -348,7 +348,7 @@ def run_pipeline(limit: int = None,
     except Exception as exc:
         # Honeypot veto failure is non-fatal — log and continue, because the
         # ranking is still valid; we'd just rather not submit honeypots.
-        print(f"\n⚠ STEP 5 skipped (honeypot veto error): {exc}")
+        print(f"\n[WARN] STEP 5 skipped (honeypot veto error): {exc}")
 
     # ====================================================================
     # STEP 6 — Generate submission CSV + metadata (Person 4: output_generator)
@@ -371,7 +371,7 @@ def run_pipeline(limit: int = None,
             )
             print(f"  Metadata:    {metadata_path}")
     except Exception as exc:
-        print(f"\n❌ STEP 6 FAILED: {exc}")
+        print(f"\n[ERROR] STEP 6 FAILED: {exc}")
         _print_failure_hint("output generation", "output_generator.py")
         return 1
 
@@ -383,10 +383,10 @@ def run_pipeline(limit: int = None,
             with _stage_timer("STEP 7 — Validating submission"):
                 validation_ok = validate_output(submission_path)
         except Exception as exc:
-            print(f"\n⚠ STEP 7 skipped (validation error): {exc}")
+            print(f"\n[WARN] STEP 7 skipped (validation error): {exc}")
             validation_ok = None
     else:
-        print("\n▶ STEP 7 — Validation (skipped via --skip-validation)")
+        print("\n>>> STEP 7 - Validation (skipped via --skip-validation)")
 
     # ====================================================================
     # SUMMARY
@@ -403,7 +403,7 @@ def run_pipeline(limit: int = None,
     # Score-combiner's own summary (top/bottom 3, mean, std).
     try:
         stats = scoring_summary(ranked)
-        print(f"  Final score range    : {stats['min_score']:.4f} – "
+        print(f"  Final score range    : {stats['min_score']:.4f} - "
               f"{stats['max_score']:.4f}  (mean {stats['mean_score']:.4f})")
     except Exception:
         pass  # summary is cosmetic; never fail the pipeline on it
@@ -418,14 +418,14 @@ def run_pipeline(limit: int = None,
     print(f"  Total runtime        : {_fmt_time(total_elapsed)} "
           f"(budget {budget_min} min)")
     if total_elapsed > budget_min * 60:
-        print(f"  ⚠ OVER BUDGET — exceeds {budget_min} min CPU limit. "
+        print(f"  [WARN] OVER BUDGET - exceeds {budget_min} min CPU limit. "
               f"Reduce --limit or switch to the MiniLM model.")
 
     # Validation verdict.
     if validation_ok is True:
-        print("  Validation           : ✅ PASSED")
+        print("  Validation           : [PASS] PASSED")
     elif validation_ok is False:
-        print("  Validation           : ❌ FAILED (see errors above)")
+        print("  Validation           : [FAIL] FAILED (see errors above)")
     else:
         print("  Validation           : (not run)")
 
