@@ -179,7 +179,7 @@ input, select { font-family: inherit; color: inherit; }
 @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
 
 /* =================================================================
-   HERO  (Spline lives here)
+   HERO
    ================================================================= */
 .hero {
   position: relative;
@@ -187,9 +187,10 @@ input, select { font-family: inherit; color: inherit; }
   border-radius: var(--r-lg);
   background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 300px;
 }
 .hero__ambient {
   position: absolute; inset: 0; pointer-events: none;
@@ -215,48 +216,12 @@ input, select { font-family: inherit; color: inherit; }
   margin-bottom: 16px;
 }
 .hero__title em { font-style: normal; color: var(--accent); }
-.hero__sub { color: var(--text-2); font-size: 15.5px; max-width: 48ch; line-height: 1.55; }
+.hero__sub { color: var(--text-2); font-size: 15.5px; max-width: 65ch; line-height: 1.55; }
 .hero__stats { display: flex; gap: 28px; margin-top: 28px; }
 .hero__stat { display: flex; flex-direction: column; gap: 3px; }
 .hero__stat .n { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 500; color: var(--text); }
 .hero__stat .l { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
 .hero__stat .sep { width: 1px; align-self: stretch; background: var(--line-2); }
-
-/* Spline slot */
-#spline-container {
-  position: relative; z-index: 1;
-  min-height: 360px;
-  border-left: 1px solid var(--line);
-  background:
-    radial-gradient(60% 60% at 60% 45%, rgba(94,234,212,.10), transparent 70%),
-    var(--bg-2);
-  display: grid; place-items: center;
-  /* CRITICAL ADDITION: This hides anything that bleeds outside the box */
-  overflow: hidden; 
-}
-
-#spline-container spline-viewer { 
-  position: absolute; 
-  top: 0; 
-  left: 0; 
-  /* CRITICAL ADDITION: Makes the viewer wider and taller to push the logo out of bounds */
-  width: calc(100% + 120px); 
-  height: calc(100% + 60px); 
-}
-
-.spline-placeholder {
-  text-align: center; color: var(--text-3);
-  border: 1px dashed var(--line-2); border-radius: var(--r-md);
-  padding: 26px 30px; max-width: 280px;
-  background: rgba(16,16,21,.4); backdrop-filter: blur(2px);
-}
-.spline-placeholder .glyph {
-  width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 12px;
-  display: grid; place-items: center; color: var(--accent);
-  background: var(--accent-soft); border: 1px solid rgba(94,234,212,.2);
-}
-.spline-placeholder b { display: block; color: var(--text-2); font-size: 13px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.01em; }
-.spline-placeholder small { font-size: 11.5px; line-height: 1.5; }
 
 /* =================================================================
    METRICS BAR — unified panel, not 4 floating boxes
@@ -495,10 +460,6 @@ tbody tr:hover { background: var(--surface-2); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
-<!-- Spline 3D viewer web component (vanilla, no build step needed).
-     This is the HTML equivalent of the React <Spline/> component.
-     Loaded from unpkg CDN (matches the version noted in the slot comment). -->
-<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js"></script>
 </head>
 <body>
 
@@ -556,7 +517,7 @@ tbody tr:hover { background: var(--surface-2); }
 
 <main class="page">
 
-  <!-- ===================== HERO (Spline) ===================== -->
+  <!-- ===================== HERO ===================== -->
   <section class="reveal" style="animation-delay:.05s">
     <div class="hero">
       <div class="hero__ambient"></div>
@@ -571,31 +532,6 @@ tbody tr:hover { background: var(--surface-2); }
           <div class="hero__stat"><span class="sep"></span></div>
           <div class="hero__stat"><span class="n">70 / 30</span><span class="l">Semantic / Behavioural</span></div>
         </div>
-      </div>
-      <!--
-        ╔══════════════════════════════════════════════════════════╗
-        ║  SPLINE 3D SLOT                                            ║
-        ║  1. Add to <head>:                                         ║
-        ║     <script type="module"                                  ║
-        ║       src="https://unpkg.com/@splinetool/viewer@1.9.48/    ║
-        ║              build/spline-viewer.js"></script>             ║
-        ║  2. Replace the .spline-placeholder block below with:      ║
-        ║     <spline-viewer url="https://prod.spline.design/        ║
-        ║        XXXXXXX/scene.splinecode"></spline-viewer>          ║
-        ║  CSS already sizes spline-viewer to fill this panel.       ║
-        ╚══════════════════════════════════════════════════════════╝
-      -->
-      <div id="spline-container">
-        <!-- Live Spline 3D scene (hosted on prod.spline.design).
-             This is the same scene referenced in the team's React snippet:
-               scene="https://prod.spline.design/qjNs3Fys2x0ZXGJ6/scene.splinecode"
-             Rendered here via the <spline-viewer> web component so it works
-             in plain HTML (no React/Next.js build needed). The #spline-container
-             CSS already sizes spline-viewer to fill the panel. -->
-        <spline-viewer
-          url="https://prod.spline.design/qjNs3Fys2x0ZXGJ6/scene.splinecode"
-          loading-anim-type="none">
-        </spline-viewer>
       </div>
     </div>
   </section>
